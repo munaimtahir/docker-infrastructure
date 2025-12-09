@@ -2,6 +2,21 @@
 
 Automated setup for running multiple Docker applications behind Traefik reverse proxy with path-based routing.
 
+## 🎯 Latest Updates
+
+### ✅ PUBLIC IP ACCESS FIXED (December 2025)
+The critical issue preventing Traefik dashboard and apps from being accessible via public IP has been **RESOLVED**.
+
+**What was fixed**:
+- Removed restrictive Host rules for IP-based access
+- Apps now work with both IP addresses and domain names
+- Dashboard accessible at `http://<your-ip>/dashboard/`
+- Apps accessible at `http://<your-ip>/<app-path>`
+
+**To apply fix to existing installations**: See [Troubleshooting](#-troubleshooting) section below.
+
+📖 **Full documentation**: See [FEATURE_ANALYSIS.md](FEATURE_ANALYSIS.md) for complete feature list and [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed help.
+
 ## 🚀 Quick Start
 
 ### Option 1: Deploy from Windows (Easiest)
@@ -172,6 +187,28 @@ networks:
 
 ## 🐛 Troubleshooting
 
+> **📖 See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for comprehensive troubleshooting guide**
+
+### Quick Fixes
+
+#### Dashboard/Apps Not Accessible on Public IP? ✅ FIXED
+
+If you're using an **IP address** (not a domain name) and can't access the dashboard or apps, this is now fixed!
+
+**The Fix**: Updated routing to work with IP addresses without Host header restrictions.
+
+**To apply to existing apps**:
+```bash
+cd /home/munaim/docker-infrastructure
+
+# Re-add your apps (this updates their routing rules)
+./scripts/add-app.sh /home/munaim/apps/consult /consult
+./scripts/add-app.sh /home/munaim/apps/lab /lab
+
+# Restart Traefik
+./scripts/restart-proxy.sh
+```
+
 ### App not accessible
 
 ```bash
@@ -195,6 +232,12 @@ docker-compose down
 docker-compose up -d
 docker-compose logs
 ```
+
+### Dashboard needs trailing slash
+
+The dashboard must be accessed with a trailing slash:
+- ✅ Correct: `http://YOUR_IP/dashboard/`
+- ❌ Wrong: `http://YOUR_IP/dashboard`
 
 ### List all apps and their status
 

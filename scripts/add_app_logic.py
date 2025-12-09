@@ -2,7 +2,17 @@ import sys
 import yaml
 import os
 import shutil
+import re
 from datetime import datetime
+
+def _is_ip_address(host):
+    """Check if the host is an IP address (IPv4 or IPv6)"""
+    # Simple regex for IPv4
+    ipv4_pattern = r'^(\d{1,3}\.){3}\d{1,3}$'
+    # Simple regex for IPv6 (basic check)
+    ipv6_pattern = r'^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$'
+    
+    return bool(re.match(ipv4_pattern, host) or re.match(ipv6_pattern, host))
 
 def process_app(app_path, url_path, server_host):
     compose_file = os.path.join(app_path, "docker-compose.yml")
@@ -72,7 +82,13 @@ def process_app(app_path, url_path, server_host):
     # - Vite: set base: '/consult' in vite.config.js
     # - React (CRA): set homepage: '/consult' in package.json
     # - Vue CLI: set publicPath: '/consult' in vue.config.js
-    host_rule_prefix = f"Host(`{server_host}`) && " if server_host else ""
+    
+    # FIX: Don't use Host rule for IP addresses - it causes access issues
+    # When server_host is an IP, omit the Host rule to allow access from any host/IP
+    # This enables access via public IP, private IP, localhost, etc.
+    use_host_rule = server_host and not _is_ip_address(server_host)
+    host_rule_prefix = f"Host(`{server_host}`) && " if use_host_rule else ""
+    
     traefik_labels = [
         "traefik.enable=true",
         # Main router - handles all paths under the URL path
