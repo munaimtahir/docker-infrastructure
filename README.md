@@ -19,8 +19,8 @@ Automated setup for running multiple Docker applications behind Traefik reverse 
    ```
 
 3. **Access your app:**
-   - App: `http://34.93.19.177/consult`
-   - Traefik Dashboard: `http://34.93.19.177:8080`
+   - App: `http://<server_host>/consult`
+   - Traefik Dashboard: `http://<server_host>/dashboard`
      - Username: `admin`
      - Password: `admin123`
 
@@ -28,12 +28,12 @@ Automated setup for running multiple Docker applications behind Traefik reverse 
 
 1. **Upload files to server:**
    ```powershell
-   scp -r deployment-package munaim@34.93.19.177:/home/munaim/docker-infrastructure
+   scp -r deployment-package munaim@<server_host>:/home/munaim/docker-infrastructure
    ```
 
 2. **SSH to server:**
    ```bash
-   ssh munaim@34.93.19.177
+   ssh munaim@<server_host>
    ```
 
 3. **Run setup:**
@@ -48,6 +48,11 @@ Automated setup for running multiple Docker applications behind Traefik reverse 
    ./scripts/add-app.sh /home/munaim/apps/consult /consult
    ./scripts/add-app.sh /home/munaim/apps/myapp /myapp
    ```
+
+### Server host setting
+- By default the scripts detect the server's primary IP for routing and for the registry.  
+- If you're using a domain, export it before running the scripts: `export SERVER_HOST=accreditrack.example.com`.
+- The dashboard and apps will be reachable at `http://$SERVER_HOST/<path>`.
 
 ## 📁 What Gets Installed
 
@@ -103,9 +108,9 @@ docker-infrastructure/
 ## 🌐 How Path-Based Routing Works
 
 Your apps will be accessible at:
-- `http://34.93.19.177/consult` → Your consult app
-- `http://34.93.19.177/myapp` → Your myapp
-- `http://34.93.19.177/another` → Another app
+- `http://<server_host>/consult` → Your consult app
+- `http://<server_host>/myapp` → Your myapp
+- `http://<server_host>/another` → Another app
 
 All apps run simultaneously on the same server, same IP!
 
@@ -135,7 +140,7 @@ services:
       - web
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.myapp.rule=Host(`34.93.19.177`) && PathPrefix(`/myapp`)"
+      - "traefik.http.routers.myapp.rule=Host(`your.host`) && PathPrefix(`/myapp`)"
       - "traefik.http.routers.myapp.entrypoints=web"
       - "traefik.http.services.myapp.loadbalancer.server.port=80"
       - "traefik.http.middlewares.myapp-stripprefix.stripprefix.prefixes=/myapp"
@@ -157,7 +162,7 @@ networks:
    # Update docker-compose.yml with the new hash
    ```
 
-2. **Firewall**: The setup script opens ports 22, 80, 443, 8080
+2. **Firewall**: The setup script opens ports 22, 80, 443
 
 3. **SSL/HTTPS**: Currently disabled. To enable:
    - Get a domain name
@@ -200,7 +205,7 @@ cd /home/munaim/docker-infrastructure
 
 ## 📊 Monitoring
 
-- **Traefik Dashboard**: `http://34.93.19.177:8080`
+- **Traefik Dashboard**: `http://<server_host>/dashboard`
   - See all registered apps
   - Monitor traffic
   - Check routing rules
@@ -211,7 +216,7 @@ Every time you deploy a new app:
 
 1. Put it in `/home/munaim/apps/new-app`
 2. Run: `./scripts/add-app.sh /home/munaim/apps/new-app /new-app`
-3. Access at: `http://34.93.19.177/new-app`
+3. Access at: `http://<server_host>/new-app`
 
 That's it! No manual configuration needed.
 

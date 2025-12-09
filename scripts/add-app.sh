@@ -19,8 +19,17 @@ print_error() { echo -e "${RED}✗ $1${NC}"; }
 print_info() { echo -e "${YELLOW}ℹ $1${NC}"; }
 
 # Configuration
-SERVER_IP="34.93.19.177"
 INFRA_DIR="/home/munaim/docker-infrastructure"
+# Allow override for domains or new IPs: export SERVER_HOST=mydomain.com
+SERVER_HOST="${SERVER_HOST:-$(hostname -I | awk '{print $1}')}"
+# Normalize in case a scheme/path was provided
+SERVER_HOST="${SERVER_HOST#http://}"
+SERVER_HOST="${SERVER_HOST#https://}"
+SERVER_HOST="${SERVER_HOST%%/*}"
+if [ -z "$SERVER_HOST" ]; then
+    print_error "Unable to determine server host. Set SERVER_HOST env var."
+    exit 1
+fi
 
 # Check arguments
 if [ $# -lt 2 ]; then
@@ -47,7 +56,7 @@ echo "=========================================="
 echo "  Adding App to Traefik"
 echo "=========================================="
 print_info "App Path: $APP_PATH"
-print_info "URL Path: http://$SERVER_IP$URL_PATH"
+print_info "URL Path: http://$SERVER_HOST$URL_PATH"
 
 # Check for docker-compose.yml
 COMPOSE_FILE="$APP_PATH/docker-compose.yml"
@@ -58,7 +67,7 @@ fi
 
 # Call Python script to handle logic
 print_info "Configuring app..."
-python3 "$INFRA_DIR/scripts/add_app_logic.py" "$APP_PATH" "$URL_PATH" "$SERVER_IP"
+python3 "$INFRA_DIR/scripts/add_app_logic.py" "$APP_PATH" "$URL_PATH" "$SERVER_HOST"
 
 # Restart the app
 echo ""
@@ -82,5 +91,5 @@ echo ""
 echo "=========================================="
 echo "  ✓ App Added Successfully!"
 echo "=========================================="
-print_success "URL: http://$SERVER_IP$URL_PATH"
+print_success "URL: http://$SERVER_HOST$URL_PATH"
 echo ""

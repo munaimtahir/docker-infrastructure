@@ -22,7 +22,7 @@ NC='\033[0m' # No Color
 # Configuration
 INFRA_DIR="/home/munaim/docker-infrastructure"
 APPS_DIR="/home/munaim/apps"
-SERVER_IP="34.93.19.177"
+SERVER_HOST="${SERVER_HOST:-$(hostname -I | awk '{print $1}')}"
 
 # Function to print colored output
 print_success() {
@@ -117,7 +117,6 @@ if command -v ufw &> /dev/null; then
     sudo ufw allow 22/tcp comment 'SSH'
     sudo ufw allow 80/tcp comment 'HTTP'
     sudo ufw allow 443/tcp comment 'HTTPS'
-    sudo ufw allow 8080/tcp comment 'Traefik Dashboard'
     
     # Enable UFW if not already enabled
     if ! sudo ufw status | grep -q "Status: active"; then
@@ -128,7 +127,7 @@ if command -v ufw &> /dev/null; then
     sudo ufw status
 else
     print_info "UFW not installed. Please configure firewall manually:"
-    echo "  - Allow ports: 22 (SSH), 80 (HTTP), 443 (HTTPS), 8080 (Traefik Dashboard)"
+    echo "  - Allow ports: 22 (SSH), 80 (HTTP), 443 (HTTPS)"
 fi
 echo ""
 
@@ -177,7 +176,7 @@ echo ""
 print_success "Infrastructure is ready!"
 echo ""
 echo "Next Steps:"
-echo "  1. Access Traefik Dashboard: http://$SERVER_IP:8080"
+echo "  1. Access Traefik Dashboard: http://$SERVER_HOST/dashboard"
 echo "     Username: admin"
 echo "     Password: admin123"
 echo "     (Change this password after first login!)"

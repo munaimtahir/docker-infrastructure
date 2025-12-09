@@ -19,6 +19,7 @@ print_blue() { echo -e "${BLUE}$1${NC}"; }
 
 INFRA_DIR="/home/munaim/docker-infrastructure"
 REGISTRY_FILE="$INFRA_DIR/config/apps.json"
+SERVER_HOST="${SERVER_HOST:-$(hostname -I | awk '{print $1}')}"
 
 echo "=========================================="
 echo "  Registered Apps"
@@ -96,5 +97,5 @@ echo ""
 echo "Commands:"
 echo "  Add app:    ./scripts/add-app.sh <path> <url_path>"
 echo "  Remove app: ./scripts/remove-app.sh <app_name>"
-echo "  Dashboard:  http://34.93.19.177:8080"
+echo "  Dashboard:  http://$SERVER_HOST/dashboard"
 echo ""

@@ -12,7 +12,6 @@ services:
     ports:
       - "80:80"          # HTTP
       - "443:443"        # HTTPS
-      - "8080:8080"      # Dashboard
 
     command:
       - "--configFile=/etc/traefik/traefik.yml"
@@ -28,18 +27,17 @@ services:
     labels:
       - "traefik.enable=true"
       # Dashboard router - serves the dashboard UI
-      - "traefik.http.routers.dashboard.rule=Host(`34.93.19.177`) && PathPrefix(`/dashboard`)"
+      - "traefik.http.routers.dashboard.rule=PathPrefix(`/dashboard`)"
       - "traefik.http.routers.dashboard.service=api@internal"
       - "traefik.http.routers.dashboard.entrypoints=web"
       - "traefik.http.routers.dashboard.middlewares=dashboard-auth"
       # API router - serves the API endpoints  
-      - "traefik.http.routers.dashboard-api.rule=Host(`34.93.19.177`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.dashboard-api.rule=PathPrefix(`/api`)"
       - "traefik.http.routers.dashboard-api.service=api@internal"
       - "traefik.http.routers.dashboard-api.entrypoints=web"
       - "traefik.http.routers.dashboard-api.middlewares=dashboard-auth"
       # Middlewares
-      - "traefik.http.middlewares.dashboard-auth.basicauth.users=admin:$$apr1$$8EVjn/nj$$GiLUZqcbueTFeD23SuB6x0"
-      # Dashboard accessible directly on port 8080 (insecure mode) - no routing needed
+      - "traefik.http.middlewares.dashboard-auth.basicauth.users=admin:$$apr1$$EgPG2bU2$$OBBi192zvsDf1H/Xwi3C40"
 
 networks:
   web:

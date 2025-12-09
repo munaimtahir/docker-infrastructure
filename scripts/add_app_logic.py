@@ -4,7 +4,7 @@ import os
 import shutil
 from datetime import datetime
 
-def process_app(app_path, url_path, server_ip):
+def process_app(app_path, url_path, server_host):
     compose_file = os.path.join(app_path, "docker-compose.yml")
     
     if not os.path.exists(compose_file):
@@ -72,10 +72,11 @@ def process_app(app_path, url_path, server_ip):
     # - Vite: set base: '/consult' in vite.config.js
     # - React (CRA): set homepage: '/consult' in package.json
     # - Vue CLI: set publicPath: '/consult' in vue.config.js
+    host_rule_prefix = f"Host(`{server_host}`) && " if server_host else ""
     traefik_labels = [
         "traefik.enable=true",
         # Main router - handles all paths under the URL path
-        f"traefik.http.routers.{router_name}.rule=Host(`{server_ip}`) && PathPrefix(`{url_path}`)",
+        f"traefik.http.routers.{router_name}.rule={host_rule_prefix}PathPrefix(`{url_path}`)",
         f"traefik.http.routers.{router_name}.entrypoints=web",
         f"traefik.http.services.{router_name}.loadbalancer.server.port={port}",
         # Strip prefix middleware - removes the URL path prefix before forwarding to app
@@ -110,11 +111,11 @@ def process_app(app_path, url_path, server_ip):
 
     print("Success: Configuration updated")
     try:
-        update_registry(app_path, url_path, server_ip)
+        update_registry(app_path, url_path, server_host)
     except:
         pass
 
-def update_registry(app_path, url_path, server_ip):
+def update_registry(app_path, url_path, server_host):
     registry_file = "/home/munaim/docker-infrastructure/config/apps.json"
     app_name = os.path.basename(app_path)
     
@@ -133,10 +134,11 @@ def update_registry(app_path, url_path, server_ip):
         # Remove existing
         registry['apps'] = [a for a in registry.get('apps', []) if a['name'] != app_name]
         
+        url_host = server_host or "localhost"
         registry['apps'].append({
             'name': app_name,
             'path': app_path,
-            'url': f"http://{server_ip}{url_path}",
+            'url': f"http://{url_host}{url_path}",
             'url_path': url_path,
             'added': datetime.now().isoformat()
         })
@@ -151,7 +153,7 @@ def update_registry(app_path, url_path, server_ip):
 
 if __name__ == "__main__":
     if len(sys.argv) < 4:
-        print("Usage: python3 add_app_logic.py <app_path> <url_path> <server_ip>")
+        print("Usage: python3 add_app_logic.py <app_path> <url_path> <server_host>")
         sys.exit(1)
     
     process_app(sys.argv[1], sys.argv[2], sys.argv[3])
