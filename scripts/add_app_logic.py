@@ -2,19 +2,35 @@ import sys
 import yaml
 import os
 import shutil
-import re
 from datetime import datetime
+try:
+    import ipaddress
+    HAS_IPADDRESS = True
+except ImportError:
+    import re
+    HAS_IPADDRESS = False
 
 def _is_ip_address(host):
     """Check if the host is an IP address (IPv4 or IPv6)"""
-    # More accurate IPv4 validation (ensures each octet is 0-255)
-    ipv4_pattern = r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
-    
-    # More comprehensive IPv6 pattern
-    # Matches standard IPv6 format with 8 groups of hex digits
-    ipv6_pattern = r'^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|::)$'
-    
-    return bool(re.match(ipv4_pattern, host) or re.match(ipv6_pattern, host))
+    if HAS_IPADDRESS:
+        # Use Python's built-in ipaddress module for reliable validation
+        try:
+            ipaddress.ip_address(host)
+            return True
+        except (ValueError, TypeError):
+            return False
+    else:
+        # Fallback to regex for older Python versions (< 3.3)
+        # Simple pattern then validate octets
+        ipv4_pattern = r'^(\d{1,3}\.){3}\d{1,3}$'
+        if re.match(ipv4_pattern, host):
+            # Validate each octet is 0-255
+            octets = host.split('.')
+            return all(0 <= int(octet) <= 255 for octet in octets)
+        
+        # Basic IPv6 check
+        ipv6_pattern = r'^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$'
+        return bool(re.match(ipv6_pattern, host))
 
 def process_app(app_path, url_path, server_host):
     compose_file = os.path.join(app_path, "docker-compose.yml")

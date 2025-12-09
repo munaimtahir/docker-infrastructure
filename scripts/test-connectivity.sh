@@ -110,7 +110,7 @@ echo ""
 # Test 7: Check registered apps
 echo "Test 7: Registered Apps"
 if [ -f "$INFRA_DIR/config/apps.json" ]; then
-    APP_COUNT=$(python3 -c "import json; import sys; f=open('$INFRA_DIR/config/apps.json'); d=json.load(f); f.close(); print(len(d.get('apps', [])))" 2>/dev/null || echo "0")
+    APP_COUNT=$(python3 -c "import json; exec(\"with open('$INFRA_DIR/config/apps.json') as f: data=json.load(f); print(len(data.get('apps', [])))\");" 2>/dev/null || echo "0")
     if [ "$APP_COUNT" -gt 0 ]; then
         print_success "$APP_COUNT apps registered"
         echo ""
