@@ -3,6 +3,34 @@ import yaml
 import os
 import shutil
 from datetime import datetime
+try:
+    import ipaddress
+    HAS_IPADDRESS = True
+except ImportError:
+    import re
+    HAS_IPADDRESS = False
+
+def is_ip_address(host):
+    """Check if the host is an IP address (IPv4 or IPv6)"""
+    if HAS_IPADDRESS:
+        # Use Python's built-in ipaddress module for reliable validation
+        try:
+            ipaddress.ip_address(host)
+            return True
+        except (ValueError, TypeError):
+            return False
+    else:
+        # Fallback to regex for older Python versions (< 3.3)
+        # Simple pattern then validate octets
+        ipv4_pattern = r'^(\d{1,3}\.){3}\d{1,3}$'
+        if re.match(ipv4_pattern, host):
+            # Validate each octet is 0-255
+            octets = host.split('.')
+            return all(0 <= int(octet) <= 255 for octet in octets)
+        
+        # Basic IPv6 check
+        ipv6_pattern = r'^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$'
+        return bool(re.match(ipv6_pattern, host))
 
 def process_app(app_path, url_path, server_host):
     compose_file = os.path.join(app_path, "docker-compose.yml")
@@ -72,7 +100,13 @@ def process_app(app_path, url_path, server_host):
     # - Vite: set base: '/consult' in vite.config.js
     # - React (CRA): set homepage: '/consult' in package.json
     # - Vue CLI: set publicPath: '/consult' in vue.config.js
-    host_rule_prefix = f"Host(`{server_host}`) && " if server_host else ""
+    
+    # FIX: Don't use Host rule for IP addresses - it causes access issues
+    # When server_host is an IP, omit the Host rule to allow access from any host/IP
+    # This enables access via public IP, private IP, localhost, etc.
+    use_host_rule = server_host and not _is_ip_address(server_host)
+    host_rule_prefix = f"Host(`{server_host}`) && " if use_host_rule else ""
+    
     traefik_labels = [
         "traefik.enable=true",
         # Main router - handles all paths under the URL path

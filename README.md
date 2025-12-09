@@ -2,6 +2,21 @@
 
 Automated setup for running multiple Docker applications behind Traefik reverse proxy with path-based routing.
 
+## 🎯 Latest Updates
+
+### ✅ PUBLIC IP ACCESS FIXED (December 2025)
+The critical issue preventing Traefik dashboard and apps from being accessible via public IP has been **RESOLVED**.
+
+**What was fixed**:
+- Removed restrictive Host rules for IP-based access
+- Apps now work with both IP addresses and domain names
+- Dashboard accessible at `http://<your-ip>/dashboard/`
+- Apps accessible at `http://<your-ip>/<app-path>`
+
+**To apply fix to existing installations**: See [Troubleshooting](#-troubleshooting) section below.
+
+📖 **Full documentation**: See [FEATURE_ANALYSIS.md](FEATURE_ANALYSIS.md) for complete feature list and [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed help.
+
 ## 🚀 Quick Start
 
 ### Option 1: Deploy from Windows (Easiest)
@@ -69,9 +84,15 @@ docker-infrastructure/
 │   ├── add-app.sh               # Add app to Traefik
 │   ├── remove-app.sh            # Remove app
 │   ├── list-apps.sh             # List all apps
-│   └── restart-proxy.sh         # Restart Traefik
-└── config/
-    └── apps.json                # Registry of apps
+│   ├── restart-proxy.sh         # Restart Traefik
+│   ├── rebuild-app.sh           # Rebuild frontend apps
+│   └── test-connectivity.sh     # Test infrastructure (NEW)
+├── config/
+│   └── apps.json                # Registry of apps
+└── docs/
+    ├── FEATURE_ANALYSIS.md      # Complete feature inventory (NEW)
+    ├── TROUBLESHOOTING.md       # Detailed troubleshooting (NEW)
+    └── MIGRATION_GUIDE.md       # Migration guide for existing users (NEW)
 ```
 
 ## 🔧 Available Scripts
@@ -79,6 +100,9 @@ docker-infrastructure/
 ### On Server (SSH)
 
 ```bash
+# Test infrastructure connectivity (NEW!)
+./scripts/test-connectivity.sh
+
 # List all registered apps
 ./scripts/list-apps.sh
 
@@ -90,6 +114,9 @@ docker-infrastructure/
 
 # Restart Traefik
 ./scripts/restart-proxy.sh
+
+# Rebuild frontend app with base path
+./scripts/rebuild-app.sh /home/munaim/apps/myapp /myapp
 ```
 
 ### From Windows (PowerShell)
@@ -172,6 +199,28 @@ networks:
 
 ## 🐛 Troubleshooting
 
+> **📖 See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for comprehensive troubleshooting guide**
+
+### Quick Fixes
+
+#### Dashboard/Apps Not Accessible on Public IP? ✅ FIXED
+
+If you're using an **IP address** (not a domain name) and can't access the dashboard or apps, this is now fixed!
+
+**The Fix**: Updated routing to work with IP addresses without Host header restrictions.
+
+**To apply to existing apps**:
+```bash
+cd /home/munaim/docker-infrastructure
+
+# Re-add your apps (this updates their routing rules)
+./scripts/add-app.sh /home/munaim/apps/consult /consult
+./scripts/add-app.sh /home/munaim/apps/lab /lab
+
+# Restart Traefik
+./scripts/restart-proxy.sh
+```
+
 ### App not accessible
 
 ```bash
@@ -195,6 +244,12 @@ docker-compose down
 docker-compose up -d
 docker-compose logs
 ```
+
+### Dashboard needs trailing slash
+
+The dashboard must be accessed with a trailing slash:
+- ✅ Correct: `http://YOUR_IP/dashboard/`
+- ❌ Wrong: `http://YOUR_IP/dashboard`
 
 ### List all apps and their status
 
@@ -220,10 +275,55 @@ Every time you deploy a new app:
 
 That's it! No manual configuration needed.
 
+## 📚 Complete Documentation
+
+This README provides a quick start guide. For detailed information, see:
+
+### 📖 [FEATURE_ANALYSIS.md](FEATURE_ANALYSIS.md)
+Complete inventory of all features in the repository:
+- ✅ **6 Built and Working Features** - Core functionality that's ready to use
+- ⚠️ **5 Built but Needs Debugging** - Features that need attention (with fixes!)
+- ❌ **21 Not Built Features** - Roadmap for future development
+
+### 🔧 [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+Comprehensive troubleshooting guide covering:
+- Dashboard access issues (404, blank page, authentication)
+- App connectivity problems (503, 502, connection timeout)
+- Firewall and network configuration
+- Frontend asset loading issues
+- SSL/HTTPS setup
+- VPS provider-specific firewall settings
+- 11+ common issues with detailed solutions
+
+### 🚀 [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)
+For existing users updating to the latest version:
+- Step-by-step migration instructions
+- Understanding what changed and why
+- Verification checklist
+- Rollback procedures
+- Technical details about the fix
+
+### 🧪 Testing Your Setup
+
+Run the connectivity test script:
+```bash
+cd /home/munaim/docker-infrastructure
+./scripts/test-connectivity.sh
+```
+
+This will check:
+- ✅ Docker and Traefik status
+- ✅ Network configuration
+- ✅ Port accessibility
+- ✅ Dashboard connectivity
+- ✅ All registered apps
+- ✅ Firewall settings
+
 ## 📞 Support
 
 If something doesn't work:
-1. Check the troubleshooting section above
-2. View Traefik logs: `docker-compose logs` in traefik directory
-3. View app logs: `docker-compose logs` in app directory
-4. Check apps registry: `cat /home/munaim/docker-infrastructure/config/apps.json`
+1. **Run diagnostics**: `./scripts/test-connectivity.sh`
+2. **Check detailed troubleshooting**: See [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+3. **View Traefik logs**: `cd traefik && docker-compose logs`
+4. **View app logs**: `cd /home/munaim/apps/YOUR_APP && docker-compose logs`
+5. **Check apps registry**: `./scripts/list-apps.sh` or `cat config/apps.json`
