@@ -13,7 +13,14 @@
       "url": "http://34.93.19.177/lab",
       "url_path": "/lab",
       "added": "2025-12-08T22:13:25.614505"
+    },
+    {
+      "name": "test-app",
+      "path": "/home/munaim/apps/test-app",
+      "url": "http://34.93.19.177/test-app",
+      "url_path": "/test-app",
+      "added": "2025-12-09T10:39:41.730533"
     }
   ],
-  "last_updated": "2025-12-08T22:13:25.614548"
+  "last_updated": "2025-12-09T10:39:41.730565"
 }
