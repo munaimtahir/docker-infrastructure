@@ -67,11 +67,18 @@ def process_app(app_path, url_path, server_ip):
     # Add Traefik labels
     router_name = os.path.basename(app_path).replace('_', '-').replace('.', '-')
     
+    # For SPAs: Strip prefix so app receives / instead of /consult
+    # IMPORTANT: Apps must be built with the correct base path:
+    # - Vite: set base: '/consult' in vite.config.js
+    # - React (CRA): set homepage: '/consult' in package.json
+    # - Vue CLI: set publicPath: '/consult' in vue.config.js
     traefik_labels = [
         "traefik.enable=true",
+        # Main router - handles all paths under the URL path
         f"traefik.http.routers.{router_name}.rule=Host(`{server_ip}`) && PathPrefix(`{url_path}`)",
         f"traefik.http.routers.{router_name}.entrypoints=web",
         f"traefik.http.services.{router_name}.loadbalancer.server.port={port}",
+        # Strip prefix middleware - removes the URL path prefix before forwarding to app
         f"traefik.http.middlewares.{router_name}-stripprefix.stripprefix.prefixes={url_path}",
         f"traefik.http.routers.{router_name}.middlewares={router_name}-stripprefix",
     ]
