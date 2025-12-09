@@ -1,6 +1,6 @@
 api:
   dashboard: true
-  insecure: true   # Dashboard accessible directly on :8080
+  insecure: false   # Dashboard served only through router with auth
 
 entryPoints:
   web:
