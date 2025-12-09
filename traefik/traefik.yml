@@ -1,0 +1,32 @@
+api:
+  dashboard: true
+  insecure: true   # Dashboard served on :8080 (safe behind firewall)
+
+entryPoints:
+  web:
+    address: ":80"
+
+  websecure:
+    address: ":443"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: "web"   # must match docker-compose network
+
+log:
+  level: INFO
+  format: common
+
+accessLog:
+  format: common
+
+# Enable this later when you point a DOMAIN, not IP
+# certificatesResolvers:
+#   letsencrypt:
+#     acme:
+#       email: your-email@example.com
+#       storage: /acme.json
+#       httpChallenge:
+#         entryPoint: web

@@ -1,0 +1,19 @@
+{
+  "apps": [
+    {
+      "name": "consult",
+      "path": "/home/munaim/apps/consult",
+      "url": "http://34.93.19.177/consult",
+      "url_path": "/consult",
+      "added": "2025-12-08T22:11:14.111527"
+    },
+    {
+      "name": "lab",
+      "path": "/home/munaim/apps/lab",
+      "url": "http://34.93.19.177/lab",
+      "url_path": "/lab",
+      "added": "2025-12-08T22:13:25.614505"
+    }
+  ],
+  "last_updated": "2025-12-08T22:13:25.614548"
+}
