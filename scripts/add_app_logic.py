@@ -10,7 +10,7 @@ except ImportError:
     import re
     HAS_IPADDRESS = False
 
-def _is_ip_address(host):
+def is_ip_address(host):
     """Check if the host is an IP address (IPv4 or IPv6)"""
     if HAS_IPADDRESS:
         # Use Python's built-in ipaddress module for reliable validation
