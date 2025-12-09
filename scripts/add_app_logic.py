@@ -7,10 +7,12 @@ from datetime import datetime
 
 def _is_ip_address(host):
     """Check if the host is an IP address (IPv4 or IPv6)"""
-    # Simple regex for IPv4
-    ipv4_pattern = r'^(\d{1,3}\.){3}\d{1,3}$'
-    # Simple regex for IPv6 (basic check)
-    ipv6_pattern = r'^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$'
+    # More accurate IPv4 validation (ensures each octet is 0-255)
+    ipv4_pattern = r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+    
+    # More comprehensive IPv6 pattern
+    # Matches standard IPv6 format with 8 groups of hex digits
+    ipv6_pattern = r'^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|::)$'
     
     return bool(re.match(ipv4_pattern, host) or re.match(ipv6_pattern, host))
 

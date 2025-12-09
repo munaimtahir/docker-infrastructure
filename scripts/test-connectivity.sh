@@ -17,7 +17,8 @@ print_error() { echo -e "${RED}✗ $1${NC}"; }
 print_info() { echo -e "${YELLOW}ℹ $1${NC}"; }
 print_blue() { echo -e "${BLUE}$1${NC}"; }
 
-INFRA_DIR="/home/munaim/docker-infrastructure"
+# Allow override via environment variable for flexibility
+INFRA_DIR="${INFRA_DIR:-/home/munaim/docker-infrastructure}"
 SERVER_HOST="${SERVER_HOST:-$(hostname -I | awk '{print $1}')}"
 
 echo "=========================================="
@@ -109,7 +110,7 @@ echo ""
 # Test 7: Check registered apps
 echo "Test 7: Registered Apps"
 if [ -f "$INFRA_DIR/config/apps.json" ]; then
-    APP_COUNT=$(python3 -c "import json; f=open('$INFRA_DIR/config/apps.json'); d=json.load(f); print(len(d.get('apps', [])))" 2>/dev/null || echo "0")
+    APP_COUNT=$(python3 -c "import json; import sys; f=open('$INFRA_DIR/config/apps.json'); d=json.load(f); f.close(); print(len(d.get('apps', [])))" 2>/dev/null || echo "0")
     if [ "$APP_COUNT" -gt 0 ]; then
         print_success "$APP_COUNT apps registered"
         echo ""
@@ -218,7 +219,7 @@ echo ""
 # Get Traefik status
 TRAEFIK_RUNNING=$(docker ps --filter "name=traefik" --format "{{.Status}}" 2>/dev/null | grep -q "Up" && echo "yes" || echo "no")
 
-if [ "$TRAEFIK_RUNNING" = "yes" ] && [ "$RESPONSE" = "401" ] || [ "$RESPONSE" = "200" ]; then
+if [ "$TRAEFIK_RUNNING" = "yes" ] && ([ "$RESPONSE" = "401" ] || [ "$RESPONSE" = "200" ]); then
     print_success "Infrastructure is operational!"
     echo ""
     print_blue "Access your services:"
